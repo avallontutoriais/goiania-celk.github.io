@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Validação de Documento</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD2d8rswU-32sQCnSSyYaHFOmuy-vUb5cA",
+  authDomain: "fintroll.firebaseapp.com",
+  projectId: "fintroll",
+  storageBucket: "fintroll.firebasestorage.app",
+  messagingSenderId: "460719278947",
+  appId: "1:460719278947:web:73d9aef2e2441ecea2e156"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f5f5f5;
+  padding: 20px;
+}
+.card {
+  background: #fff;
+  padding: 30px;
+  max-width: 600px;
+  margin: 120px auto;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.error {
+  color: #e53935;
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card" id="resultado">
+  Consultando documento...
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const codigo = params.get("codigo")?.trim();
+const resultado = document.getElementById("resultado");
+
+if (!codigo) {
+  resultado.innerHTML = `
+    <h2 class="error">Erro: Atestado Não Encontrado</h2>
+    <p style="text-align:center;">Código inválido ou inexistente.</p>
+  `;
+} else {
+
+  db.collection("atestados").doc(codigo).get()
+  .then(doc => {
+
+    if (!doc.exists) {
+      resultado.innerHTML = `
+        <h2 class="error">Erro: Atestado Não Encontrado</h2>
+        <p style="text-align:center;">Não encontramos o seu atestado.</p>
+      `;
+      return;
+    }
+
+    const d = doc.data();
+    resultado.innerHTML = `
+      <h2 style="color:#2e7d32;">Documento Válido</h2>
+      <p><b>Paciente:</b> ${d.nome}</p>
+      <p><b>CPF:</b> ${d.cpf}</p>
+      <p><b>CID:</b> ${d.cid}</p>
+      <p><b>Data:</b> ${d.data} ${d.hora}</p>
+      <p><b>Unidade:</b> ${d.unidade}</p>
+      <p><b>Profissional:</b> ${d.profissional}</p>
+    `;
+  })
+  .catch(() => {
+    resultado.innerHTML = `
+      <h2 class="error">Erro</h2>
+      <p style="text-align:center;">Erro ao consultar documento.</p>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>

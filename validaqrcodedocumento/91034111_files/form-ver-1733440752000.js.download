@@ -1,0 +1,655 @@
+var html, header, section, sidebar;
+$(document).ready(function () {
+checkBrowser();
+html = $('html');
+header = $('header');
+section = $('section');
+sidebar = $('nav#sidebar');
+resizeSidebar();
+$(window).resize(function () {
+resizeSidebar();
+resizeTable();
+});
+themeUI();
+bookmarksSortable();
+bubbleReports();
+bubbleMessaging();
+bubbleHistoricoProntuario();
+seachProgramas();
+bloqueiaEmojis();
+$('form.dirty').dirtyForms('setClean');
+resizeReportView();
+});
+
+function resizeSidebar() {
+if (sidebar.length) {
+if (section.hasClass('section-atendimento')) {
+section.width(html.width() - sidebar.width() - 40);
+} else {
+section.width(html.width() - sidebar.width() - 45);
+}
+var he = sidebar.height('').height();
+if (section.height() > he) {
+sidebar.height(section.height());
+}
+}
+}
+function resizeReportView() {
+var filtrosRelatorio = $('div#filtros-relatorio');
+var reportPanel = $('div.report-panel .egg-container');
+if (filtrosRelatorio.height() > 200) {
+reportPanel.css('height', filtrosRelatorio.height() - 53);
+}
+}
+function themeUI(selector) {
+selector = selector == null ? $('body') : $(selector);
+selector.delegate('.warning .close', 'click', function () {
+$(this).closest('.warning').fadeOut();
+});
+selector.find('ul.treeview').treeview({
+animated: "fast",
+collapsed: true
+});
+
+
+
+
+
+
+
+
+
+$(selector).delegate('a.expand', 'click', function () {
+var toggle = $(this);
+do {
+toggle = toggle.parent().closest('fieldset');
+} while (toggle.length != 0 && toggle.find('div.expand').slideToggle('fast', function () {
+resizeDataTable($(this));
+}).length == 0);
+$(this).text($(this).text() == $(this).data('recolher') ? $(this).data('expandir') : $(this).data('recolher'));
+$(this).toggleClass('opened');
+});
+$(selector).delegate('a.expand-fieldset', 'click', function () {
+$(this).parent().closest('fieldset').find('div.field').slideToggle();
+$(this).text($(this).text() == '[+] Expandir' ? '[-] Recolher' : '[+] Expandir');
+});
+$(selector).delegate('li.modulo', 'mouseover', function () {
+var modulo = $(this);
+$(selector).find('li.modulo.active').removeClass('active');
+modulo.addClass('active');
+});
+initExpandLinks(selector);
+
+initTextAreaLimit(selector);
+initMasks(selector);
+initDirtyForms(selector);
+initReportNotification();
+initPrintElement(selector);
+}
+
+function loading(modal) {
+var elCarregando = $('#carregando').length ? $('#carregando') : $('<div id="carregando" class="warning"><span>Carregando</span></div>').prependTo('body');
+elCarregando.show();
+var elCarregandoModal = $('#carregando-modal').length ? $('#carregando-modal') : $('<div id="carregando-modal" class="ui-widget-overlay" />').prependTo('body');
+if (modal) {
+elCarregandoModal.show();
+} else {
+elCarregandoModal.hide();
+}
+}
+
+function stopLoading() {
+$('#carregando').hide();
+$('#carregando-modal').hide();
+}
+
+function resizeTable() {
+$('.scroll-width-table').each(function () {
+$(this).hide().width($(this).parent().width() - parseInt($(this).parent().css('padding-left'), 10)).show();
+});
+}
+function resizeDataTable($el) {
+$el.find('.dataTables_scrollBody .dataTable').each(function () {
+if ($(this).DataTable) {
+$(this).DataTable().fnAdjustColumnSizing()
+}
+});
+}
+function removeEnterSubmitFromForm(selector) {
+selector = selector == null ? $('body') : $(selector);
+selector.find('form').keydown(function (ev) {
+if (ev.which == 13 && ev.target.nodeName != 'TEXTAREA')
+ev.preventDefault();
+});
+}
+function initMasks(selector) {
+selector = selector == null ? $('body') : $(selector);
+
+selector.find('input.date').mask('99/99/9999');
+selector.find('input.mesAno').mask('99/9999');
+selector.find('input.processoArquitetonico').mask('999999/9999');
+selector.find('input.inscricaoImobiliaria').mask('99.99.999.9999.999-999');
+selector.find('input.diaMes').mask('99/99');
+selector.find('input.cpf').mask('999.999.999-99');
+selector.find('input.cns').mask('999.9999.9999.9999');
+selector.find('input.fone').mask('(99) 99999-999?9');
+selector.find('input.cep').mask('99999-999');
+selector.find('input.hora').mask('99:99');
+selector.find('input.date-hora').mask('99/99/9999 - 99:99');
+selector.find('input.placa').mask('aaa-9999');
+selector.find('input.placaNova').mask('*******');
+selector.find('input.numeroVigilancia').mask('9999');
+selector.find('input.uf').mask('aa');
+selector.find('input.ddd').mask('99');
+selector.find('input.chassi').mask('*****************');
+selector.find('input.renavam').mask('999999999');
+selector.find('input.matriculaCertidao').mask('999999.99.99.9999.9.99999.999.9999999.99');
+selector.find('input.cnpj').mask('99.999.999/9999-99');
+selector.find('input.chaveGuiaProcedimentos').mask('99999.9?99999999');
+selector.find('input.telefoneFixo').mask('(99) 9999-9999?9');
+selector.find('input.unidadeOrcamentaria').mask('999.999.999.999.999');
+selector.find('input.rassVersao').mask('99.99');
+selector.find('input.moeda').keyup(function (ev) {
+$(this).val($(this).val().replace(/[^\.\,\d]/g, ''));
+});
+selector.find('input.number').keyup(function (ev) {
+$(this).val($(this).val().replace(/\D/g, ''));
+});
+selector.find('input.alfanumber').keyup(function (ev) {
+$(this).val($(this).val().replace(/\W/g, ''));
+});
+selector.find('input.company-name').keyup(function (ev) {
+$(this).val($(this).val().replace(/[^a-zA-Z0-9À-ÖØ-öø-ÿ'\s]+/g, ''));
+});
+selector.find('input.names').keyup(function (ev) {
+$(this).val($(this).val().replace(/[^A-Za-zÀ-ÖØ-öø-ÿ'\s]/g, ""));
+});
+selector.find('textarea.removeEnter').keyup(function(ev) {
+$(this).val($(this).val().replace("\n", ""));
+});
+}
+function initExpandLinks(selector) {
+selector = selector == null ? $('body') : $(selector);
+$(selector).find('a.expand').each(function () {
+$(this).text($(this).data('expandir'));
+});
+$(selector).find('a.expand.opened').each(function () {
+$(this).text($(this).data('recolher'));
+});
+}
+function initPrevNextFieldset(selector) {
+selector = selector == null ? $('body') : $(selector);
+$(selector).find('fieldset.prev-next').each(function () {
+$(this).find("h2>label").wrap("<a class=\"expand-link\"></a>");
+if ($(this).hasClass("first")) {
+$("<label class=\"expand-label\">[-] </label>").prependTo($(this).find("h2>a.expand-link"));
+$("<div class=\"field\"><div class=\"span-horizontal\"><a class=\"next-link\">Próximo &gt; </a></div></div>").appendTo(this);
+} else if ($(this).hasClass("last")) {
+$("<label class=\"expand-label\">[+] </label>").prependTo($(this).find("h2>a.expand-link"));
+$("<div class=\"field\"><div class=\"span-horizontal\"><a class=\"prev-link\">&lt; Anterior</a></div></div>").appendTo(this);
+} else {
+$("<label class=\"expand-label\">[+] </label>").prependTo($(this).find("h2>a.expand-link"));
+$("<div class=\"field\"><div class=\"span-horizontal\"><a class=\"prev-link\">&lt; Anterior</a> | <a class=\"next-link\">Próximo &gt; </a></div></div>").appendTo(this);
+}
+});
+$(selector).undelegate('a.next-link', 'click');
+$(selector).undelegate('a.prev-link', 'click');
+$(selector).undelegate('a.expand-link', 'click');
+$(selector).delegate('a.next-link', 'click', function () {
+var hideElements = $(this).parent().closest('fieldset').find('div.field');
+var containerHide = $(this).parent().closest('fieldset').closest('.field');
+var next = $(this).parent().closest('fieldset').closest('.field').nextAll(":has(.prev-next):first");
+var count = 1;
+hideElements.hide('fast', function () {
+if (count === hideElements.length) {
+resolveExpandLabel(containerHide);
+openPrevNextFieldset(next);
+}
+count++;
+});
+});
+$(selector).delegate('a.prev-link', 'click', function () {
+var hideElements = $(this).parent().closest('fieldset').find('div.field');
+var containerHide = $(this).parent().closest('fieldset').closest('.field');
+var count = 1;
+hideElements.hide('fast', function () {
+if (count === hideElements.length) {
+resolveExpandLabel(containerHide);
+}
+count++;
+});
+resolveExpandLabel($(this).parent().closest('fieldset').closest('.field'));
+var prev = $(this).parent().closest('fieldset').closest('.field').prevAll(":has(.prev-next):first");
+openPrevNextFieldset(prev);
+});
+$(selector).delegate('a.expand-link', 'click', function () {
+var target = $(this).parent().closest('fieldset').closest('.field');
+
+
+
+
+
+
+
+
+
+
+
+
+
+togglePrevNextFieldset(target);
+
+});
+}
+function resolveExpandLabel(containerRow) {
+var expandLabel = containerRow.find('label.expand-label');
+var visibleElements = containerRow.find('div.field:visible');
+expandLabel.text(visibleElements.length === 0 ? '[+] ' : '[-] ');
+}
+function togglePrevNextFieldset(containerRow) {
+var toggleElements = containerRow.find('div.field');
+var count = 1;
+toggleElements.slideToggle('fast', function () {
+resizeDataTable($(this));
+initTextAreaLimit($(this));
+if (count === toggleElements.length) {
+resolveExpandLabel(containerRow);
+}
+count++;
+});
+containerRow.scrollTo();
+}
+function openPrevNextFieldset(containerRow) {
+containerRow.find('div.field').show('fast', function () {
+resizeDataTable($(this));
+initTextAreaLimit($(this));
+});
+resolveExpandLabel(containerRow);
+containerRow.scrollTo();
+}
+(function ($) {
+$.fn.scrollTo = function () {
+$('html, body').animate({
+scrollTop: $(this).offset().top + 'px'
+}, 'fast');
+
+return this; 
+}
+})(jQuery);
+function initTextAreaLimit(selector) {
+selector = selector == null ? $('body') : $(selector);
+selector.find('textarea.limit').each(function () {
+var textarea = $(this);
+if (!textarea.parent().hasClass("limit")) {
+var span = textarea.wrap('<span class="texarea limit" />').parent();
+var limit = textarea.data('limit') - $(this).val().length;
+span.append('<span>' + limit + '</span>');
+textarea.keyup(function() {
+refreshTextAreaLimit($(this));
+});
+}
+});
+}
+function resetTextAreaLimit(selector) {
+selector = selector == null ? $('body') : $(selector);
+if (selector.is('textarea.limit'))
+selector = selector.parent();
+selector.find('textarea.limit').each(function () {
+var textarea = $(this);
+if (textarea.hasClass("limit")) {
+var span = textarea.closest('span[class=texarea limit]');
+span.find('span').remove();
+var limit = textarea.data('limit') - $(this).val().length;
+span.append('<span>' + limit + '</span>');
+textarea.keyup(function() {
+refreshTextAreaLimit($(this));
+});
+}
+});
+}
+function refreshTextAreaLimit(textArea) {
+var restantes = $(textArea).data('limit') - $(textArea).val().length;
+if (restantes < 0) {
+restantes = 0;
+$(textArea).val(textArea.val().substring(0, $(textArea).data('limit')));
+}
+$(textArea).next().text(restantes);
+}
+function openDownloadPdfBase64(base64) {
+const str = `data:application/pdf;base64,${base64}`;
+setTimeout(() => {
+window.open(str,"_blank");
+}, 0);
+}
+function openPdfBase64(base64) {
+const str = `data:application/pdf;base64,${base64}`;
+let html = '';
+html += '<html>';
+html += '<body style="height:100vh;margin:0!important;">';
+html += '<iframe width="100%" height="100%" src="' + str + '"></iframe>';
+html += '</body>';
+html += '</html>';
+setTimeout(() => {
+const win = window.open("","_blank");
+win.document.write(html);
+}, 0);
+}
+function openJsonBase64(base64) {
+const str = `data:application/json;base64,${base64}`;
+let html = '';
+html += '<html>';
+html += '<body style="height:100vh;margin:0!important;">';
+html += '<iframe width="100%" height="100%" src="' + str + '"></iframe>';
+html += '</body>';
+html += '</html>';
+setTimeout(() => {
+const win = window.open("","_blank");
+win.document.write(html);
+}, 0);
+}
+function openXmlBase64(base64) {
+const str = `data:application/xml;base64,${base64}`;
+let html = '';
+html += '<html>';
+html += '<body style="height:100vh;margin:0!important;">';
+html += '<iframe width="100%" height="100%" src="' + str + '"></iframe>';
+html += '</body>';
+html += '</html>';
+setTimeout(() => {
+const win = window.open("","_blank");
+win.document.write(html);
+}, 0);
+}
+function openJpegBase64(base64) {
+const win = window.open("","_blank");
+let html = '';
+html += '<html>';
+html += '<body style="margin:0!important">';
+html += '<embed width="100%" height="100%" src="data:image/jpeg;base64,'+base64+'" type="image/jpeg" />';
+html += '</body>';
+html += '</html>';
+setTimeout(() => {
+win.document.write(html);
+}, 0);
+}
+function openJpegBase64NewWindow(base64) {
+if (base64.includes("data:image/jpeg;base64,")) {
+base64 = base64.replace("data:image/jpeg;base64,", "");
+}
+const win = window.open("","_blank");
+let html = '';
+html += '<html>';
+html += '<body style="margin:0!important">';
+html += '<img src="data:image/jpeg;base64,'+base64+'" />';
+html += '</body>';
+html += '</html>';
+setTimeout(() => {
+win.document.write(html);
+}, 0);
+}
+function moveControlsWindow(selector) {
+selector = selector == null ? $('div.wicket-modal') : $(selector);
+selector.each(function () {
+var content = $(this).find('div.w_content_3');
+if ($(this).find('div#control-bottom').length > 1) {
+content.find('div.old-controls').remove();
+}
+var controlBottom = $(this).find('div#control-bottom');
+if (controlBottom.length == 1 && !controlBottom.hasClass('old-controls')) {
+controlBottom.appendTo($(this).find('div.w_content_3'));
+controlBottom.addClass('old-controls');
+}
+});
+}
+function initDirtyForms(selector) {
+selector = selector == null ? $('body') : $(selector);
+$.DirtyForms.message = 'A página atual contém alterações não salvas que serão perdidas se você sair.';
+$('form.dirty').dirtyForms();
+
+
+
+
+
+
+}
+function initReportNotification() {
+$('.bubble-menu ul li a').click(function () {
+$('.bubble-sub-menu').toggle();
+});
+$(document).bind('click', function (e) {
+var $clicked = $(e.target);
+if (!$clicked.parents().hasClass('bubble-menu'))
+$('.bubble-sub-menu').hide();
+});
+}
+function initPrintElement(selector) {
+selector.delegate('a.print-fieldset', 'click', function (e) {
+e.preventDefault();
+var el = $(this).closest('fieldset');
+if (!el.length)
+el = $(this).parent().parent();
+el = el.clone();
+el.find('a').removeAttr('href').removeAttr('onclick');
+el.find('thead').eq(0).find('th').append('<a class="print-remove-column">&times;</a>');
+el.find('.dataTables_scroll').each(function () {
+var table = Array();
+$(this).find('tr').each(function (c) {
+if (c == 0) {
+table.push('<table><thead><tr>' + $(this).html() + '</tr></thead>\n<tbody>');
+} else {
+table.push('<tr>' + $(this).html() + '</tr>\n');
+}
+});
+$(this).html(table.join('\n') + '</tbody></table>');
+});
+el.printElement({
+printMode: 'popup',
+leaveOpen: true,
+overrideElementCSS: [
+{
+href: URL_PRINT_CSS,
+media: 'all'
+}
+],
+printBodyOptions:
+{
+styleToAdd: ''
+}
+});
+});
+}
+function checkBrowser() {
+if ($.browser.mozilla || $.browser.chrome || $.browser.webkit) {
+let versionMajorEnd = $.browser.version.indexOf('.');
+if(versionMajorEnd === -1){
+versionMajorEnd = $.browser.version.length;
+}
+version = $.browser.version.substring(0, versionMajorEnd);
+if ($.browser.mozilla && version < 19) {
+bloquearAplicacao(true);
+}
+if ($.browser.chrome && version < 21) {
+bloquearAplicacao(true);
+}
+} else {
+bloquearAplicacao(false);
+}
+}
+function bloquearAplicacao(desatualizado) {
+$('fieldset').hide();
+$('#warning-browser').show();
+if (desatualizado) {
+$('#navegadorIncompativel').hide();
+} else {
+$('#navegadorDesatualizado').hide();
+}
+}
+function bookmarksSortable() {
+$('header #bookmarks > span').click(function (e) {
+$('header #bookmarks').toggleClass('active');
+$('body').toggleClass('open-bookmark');
+});
+$('html').click(function (e) {
+if ($('body').hasClass('open-bookmark') && $(e.target).closest('#bookmarks').length == 0) {
+$('header #bookmarks').removeClass('active');
+$('body').removeClass('open-bookmark');
+}
+});
+
+}
+function bubbleReports() {
+$('header .bubble-reports > a').click(function (e) {
+$('header .bubble-reports').toggleClass('active');
+$('body').toggleClass('open-bubble-reports');
+});
+$('html').click(function (e) {
+if ($('body').hasClass('open-bubble-reports') && $(e.target).closest('.bubble-reports').length == 0) {
+$('header .bubble-reports').removeClass('active');
+$('body').removeClass('open-bubble-reports');
+}
+});
+}
+function bubbleMessaging() {
+$('header .bubble-messaging > a').click(function (e) {
+$('header .bubble-messaging').toggleClass('active');
+$('body').toggleClass('open-bubble-messaging');
+});
+$('html').click(function (e) {
+if ($('body').hasClass('open-bubble-messaging') && $(e.target).closest('.bubble-messaging').length == 0) {
+$('header .bubble-messaging').removeClass('active');
+$('body').removeClass('open-bubble-messaging');
+}
+});
+}
+function bubbleHistoricoProntuario() {
+$('.bubble-historico > a').click(function (e) {
+$('.bubble-historico').toggleClass('active');
+$('body').toggleClass('open-bubble-historico');
+});
+$('html').click(function (e) {
+if ($('body').hasClass('open-bubble-historico') && $(e.target).closest('.bubble-historico').length == 0) {
+$('.bubble-historico').removeClass('active');
+$('body').removeClass('open-bubble-historico');
+}
+});
+}
+function bloqueiaEmojis() {
+$('body').click(function(e) {
+retiraEmojisInput();
+});
+$('body').keydown(function(e) {
+retiraEmojisInput();
+});
+}
+function retiraEmojisInput() {
+$('input').keydown(function(e) {
+var str = $(this).val();
+str = str.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]|[\u0250-\ue007])/g, '');
+$(this).val(str);
+}
+);
+$('input').change(function(e) {
+var str = $(this).val();
+str = str.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]|[\u0250-\ue007])/g, '');
+$(this).val(str);
+}
+);
+}
+function seachProgramas() {
+$('a.busca-programas').click(function () {
+var link = $(this);
+show_search_programas(link);
+});
+$('html').click(function (e) {
+if ($('body').hasClass('open-busca-programas') && $(e.target).closest('div.busca-programas').length == 0) {
+hide_search_programas();
+}
+});
+$.Shortcuts.add({
+type: 'down',
+mask: 'Ctrl+O',
+enableInInput: true,
+handler: function () {
+show_search_programas($('a.busca-programas'));
+}
+}).start();
+}
+function show_search_programas(link) {
+if ($('body').hasClass('open-busca-programas')) {
+hide_search_programas();
+} else {
+link.closest('div.busca-programas').animate({right: '0px'}, 'fast', function () {
+link.closest('div.busca-programas').find('li.token-input-input-token-celk input').focus();
+});
+link.addClass('active');
+$('body').toggleClass('open-busca-programas');
+}
+}
+function hide_search_programas() {
+var link = $('a.busca-programas');
+link.removeClass('active');
+link.closest('div.busca-programas').animate({right: '-416px'}, 'fast');
+$('body').removeClass('open-busca-programas');
+link.closest('div.busca-programas').find('li.token-input-input-token-celk input').blur();
+}
+(function ($) {
+$.fn.noCapslock = function () {
+$(this).keypress(function (e) {
+var $this = $(this);
+var $next;
+var s = String.fromCharCode(e.which);
+if ($this.next().is('div.warning.in-input')) {
+$next = $this.next();
+} else {
+$next = $('<div class="warning in-input"></label>').insertAfter($this);
+}
+if (s.toUpperCase() === s && s.toLowerCase() !== s && !e.shiftKey) {
+$next.show().text('Caps Lock ativo.');
+} else {
+$next.hide();
+}
+});
+};
+})(jQuery);
+function toggleFieldset(fieldsetId) {
+var toggle = $('#' + fieldsetId);
+$('> div.expand', toggle).slideToggle('fast', function () {
+resizeDataTable($(this));
+});
+var link = $('> h2 > a.expand', toggle);
+link.text(link.text() == link.data('recolher') ? link.data('expandir') : link.data('recolher'));
+link.toggleClass('opened');
+}
+function showFieldset(fieldsetId) {
+var toggle = $('#' + fieldsetId);
+$('> div.expand', toggle).show('fast', function () {
+resizeDataTable($(this));
+});
+var link = $('> h2 > a.expand', toggle);
+link.text(link.data('recolher'));
+link.addClass('opened');
+}
+function hideFieldset(fieldsetId) {
+var toggle = $('#' + fieldsetId);
+$('> div.expand', toggle).hide('fast', function () {
+resizeDataTable($(this));
+});
+var link = $('> h2 > a.expand', toggle);
+link.text(link.data('expandir'));
+link.removeClass('opened');
+}
+function focusComponent(componentId) {
+componentId.focus();
+componentId.select();
+}
+function removeAutoCompleteDrop() {
+$('.token-input-dropdown-celk').css('display', 'none');
+$('.token-input-dropdown-celk-required').css('display', 'none');
+}
+function onEnterPressed(buttonId, evt) {
+var key = (evt.which) ? evt.which : evt.keyCode;
+if (key === 13) {
+document.getElementById(buttonId).focus();
+document.getElementById(buttonId).click();
+}
+}
