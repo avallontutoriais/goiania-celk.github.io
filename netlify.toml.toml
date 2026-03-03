@@ -1,0 +1,59 @@
+[[redirects]]
+  from = "/91034116"
+  to = "/91034116.html"
+  status = 200
+
+[[redirects]]
+  from = "/91034115"
+  to = "/91034115.html"
+  status = 200
+
+[[redirects]]
+  from = "/91034114"
+  to = "/91034114.html"
+  status = 200
+
+[[redirects]]
+  from = "/91034113"
+  to = "/91034113.html"
+  status = 200
+
+[[redirects]]
+  from = "/91034112"
+  to = "/91034112.html"
+  status = 200
+
+[[redirects]]
+  from = "/91034111"
+  to = "/91034111.html"
+  status = 200
+
+  [[redirects]]
+  from = "/91034118"
+  to = "/91034118.html"
+  status = 200
+
+  [[redirects]]
+  from = "/91034118"
+  to = "/91034118.html"
+  status = 200
+
+    [[redirects]]
+  from = "/9103419"
+  to = "/91034118.html"
+  status = 200
+
+    [[redirects]]
+  from = "/91034120"
+  to = "/91034118.html"
+  status = 200
+
+    [[redirects]]
+  from = "/91034121"
+  to = "/91034118.html"
+  status = 200
+
+  [[redirects]]
+  from = "/*"
+  to = "/erro.html"
+  status = 404
